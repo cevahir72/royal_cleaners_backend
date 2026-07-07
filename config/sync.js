@@ -10,7 +10,7 @@ async function syncDatabase() {
     console.log('[DB] orders tablosu hazır.');
   } catch (err) {
     console.error('[DB] Senkronizasyon hatası:', err.message);
-    process.exit(1);
+    console.warn('[DB] Veritabanı olmadan çalışılıyor. DB gerektiren rotalar hata dönecek.');
   }
 }
 
