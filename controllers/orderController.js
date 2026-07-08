@@ -1,3 +1,5 @@
+const Order = require('../models/Order');
+
 const LEAD_CONNECTOR_TOKEN = process.env.LEAD_CONNECTOR_TOKEN;
 const LEAD_CONNECTOR_API_BASE = (process.env.LEAD_CONNECTOR_API_URL || 'https://services.leadconnectorhq.com/contacts').replace(/\/contacts\/?$/i, '') || 'https://services.leadconnectorhq.com';
 const GHL_API_VERSION = '2021-07-28';
@@ -19,25 +21,12 @@ function extractField(data, key) {
   return '';
 }
 
-function generateReceiptId() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  const buf = Buffer.alloc(4);
-  for (let i = 0; i < 4; i++) {
-    buf[i] = Math.floor(Math.random() * 256);
-  }
-  return `REC-${y}${m}${d}-${buf.toString('hex').toUpperCase()}`;
-}
-
 const getNextOrder = async (req, res, next) => {
   try {
     const data = req.body;
 
     const contactId = extractField(data, 'contact_id');
     const opportunityId = extractField(data, 'opportunity_id');
-    let receiptId = extractField(data, 'receipt_id');
 
     if (!contactId || !opportunityId) {
       return res.status(422).json({
@@ -50,9 +39,7 @@ const getNextOrder = async (req, res, next) => {
       });
     }
 
-    if (!receiptId) {
-      receiptId = generateReceiptId();
-    }
+    const { receiptId } = await Order.getNextOrderNo();
 
     const url = `${LEAD_CONNECTOR_API_BASE}/opportunities/${encodeURIComponent(opportunityId)}`;
 
