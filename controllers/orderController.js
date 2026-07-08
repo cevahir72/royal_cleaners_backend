@@ -95,4 +95,22 @@ const getNextOrder = async (req, res, next) => {
   }
 };
 
-module.exports = { getNextOrder };
+const getLastReceiptId = async (req, res, next) => {
+  try {
+    const { receiptId } = await Order.getLastReceiptId();
+    if (!receiptId) {
+      return res.status(404).json({
+        success: false,
+        error: 'No orders found',
+      });
+    }
+    return res.json({
+      success: true,
+      receipt_id: receiptId,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getNextOrder, getLastReceiptId };

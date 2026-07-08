@@ -18,6 +18,12 @@ const Order = {
     `);
   },
 
+  async getLastReceiptId() {
+    const { rows } = await pool.query('SELECT receipt_id FROM orders ORDER BY id DESC LIMIT 1');
+    if (rows.length === 0) return { receiptId: null };
+    return { receiptId: rows[0].receipt_id };
+  },
+
   async getNextOrderNo() {
     const { rows } = await pool.query('SELECT COALESCE(MAX(order_no), 0) AS max_no FROM orders');
     const nextNo = rows[0].max_no === 0 ? 10000 : rows[0].max_no + 1;
