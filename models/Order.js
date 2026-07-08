@@ -11,6 +11,11 @@ const Order = {
       )
     `;
     await pool.query(query);
+
+    await pool.query(`
+      ALTER TABLE orders
+      ADD COLUMN IF NOT EXISTS receipt_id VARCHAR(50) NOT NULL DEFAULT ''
+    `);
   },
 
   async getNextOrderNo() {
