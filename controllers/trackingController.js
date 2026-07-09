@@ -1,6 +1,14 @@
 const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 
+const stages = [
+  { id: '6a08383c-7844-4be7-b1aa-26f0c4633d05', name: 'New Lead' },
+  { id: 'bbd2d5b1-48b6-471c-9347-0488ad317188', name: 'Order Taken' },
+  { id: 'a11298ce-9040-4c22-aaff-202f2b57d1a9', name: 'In Progress' },
+  { id: 'caf55504-0372-4ae8-95e0-fe37bd27604c', name: 'Ready for Pickup' },
+  { id: '11e17c8a-de0e-48df-9c95-da3521284f86', name: 'Completed' },
+];
+
 const GHL_BASE = 'https://services.leadconnectorhq.com';
 const HEADERS = {
   Authorization: `Bearer ${process.env.GHL_PIT_TOKEN}`,
@@ -61,22 +69,21 @@ const trackReceipt = async (req, res, next) => {
     });
 
     if (!matched) {
-      return res.status(404).json({ error: 'Kayıt bulunamadı' });
+      return res.status(404).json({ error: 'No matching record found' });
     }
 
-    const status = getCustomFieldValue(
-      matched,
-      process.env.GHL_FIELD_ORDER_STATUS
-    );
+    const matchedStage = stages.find((s) => s.id === matched.pipelineStageId);
+    const status = matchedStage?.name || 'UNKNOWN';
 
     return res.json({
       receiptId,
-      status: status || 'UNKNOWN',
+      status,
       pipelineStageId: matched.pipelineStageId,
+      stages,
     });
   } catch (err) {
     console.error(err.response?.data || err.message);
-    return res.status(500).json({ error: 'Sunucu hatası' });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
